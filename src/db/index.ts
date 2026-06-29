@@ -8,6 +8,7 @@ const DEFAULT_CATEGORIES: Omit<Category, 'id'>[] = [
   { type: 'income', name: 'Inversión', icon: '📈', color: '#f59e0b', isDefault: true },
   { type: 'income', name: 'Venta', icon: '🏷️', color: '#14b8a6', isDefault: true },
   { type: 'income', name: 'Regalo', icon: '🎁', color: '#ec4899', isDefault: true },
+  { type: 'income', name: 'Efectivo', icon: '💵', color: '#65a30d', isDefault: true },
   { type: 'income', name: 'Otro ingreso', icon: '➕', color: '#8b5cf6', isDefault: true },
   // Expense
   { type: 'expense', name: 'Comida', icon: '🛒', color: '#f97316', isDefault: true },
@@ -17,6 +18,7 @@ const DEFAULT_CATEGORIES: Omit<Category, 'id'>[] = [
   { type: 'expense', name: 'Entretenimiento', icon: '🎬', color: '#a855f7', isDefault: true },
   { type: 'expense', name: 'Ropa', icon: '👕', color: '#06b6d4', isDefault: true },
   { type: 'expense', name: 'Educación', icon: '📚', color: '#84cc16', isDefault: true },
+  { type: 'expense', name: 'Efectivo', icon: '💵', color: '#65a30d', isDefault: true },
   { type: 'expense', name: 'Otro gasto', icon: '➖', color: '#6b7280', isDefault: true },
 ]
 
@@ -31,6 +33,17 @@ class BilleteraDB extends Dexie {
       wallets: '++id, name, alias, cbu, bank, color, createdAt',
       transactions: '++id, walletId, type, amount, category, note, date',
       categories: '++id, type, name, icon, color, isDefault',
+    })
+    // v2: add Efectivo category to existing installs
+    this.version(2).stores({
+      wallets: '++id, name, alias, cbu, bank, color, createdAt',
+      transactions: '++id, walletId, type, amount, category, note, date',
+      categories: '++id, type, name, icon, color, isDefault',
+    }).upgrade(async tx => {
+      const existing = await tx.table('categories').toArray()
+      const names = existing.map((c: Category) => c.name)
+      const toAdd = DEFAULT_CATEGORIES.filter(c => !names.includes(c.name))
+      if (toAdd.length > 0) await tx.table('categories').bulkAdd(toAdd)
     })
   }
 }

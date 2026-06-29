@@ -5,6 +5,9 @@ import { WalletCard } from '../components/WalletCard'
 import { AddWalletModal } from '../components/AddWalletModal'
 import { Button } from '../components/Button'
 
+// Cambiá esto por tu URL de Vercel cuando hagas deploy
+const APP_URL = import.meta.env.VITE_APP_URL ?? window.location.origin
+
 export default function Wallets() {
   const { wallets, fetchWallets, addWallet, deleteWallet } = useWalletStore()
   const [modalOpen, setModalOpen] = useState(false)
@@ -39,6 +42,7 @@ export default function Wallets() {
               key={w.id}
               wallet={w}
               onDelete={deleteWallet}
+              appUrl={APP_URL}
             />
           ))}
         </div>
